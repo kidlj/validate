@@ -1,4 +1,4 @@
-module gopkg.in/dealancer/validate.v2
+module github.com/kidlj/validate/v2
 
 go 1.11
 

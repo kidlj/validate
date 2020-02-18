@@ -272,8 +272,35 @@ func TestErrors(t *testing.T) {
 	})
 
 	switch err.(type) {
-	case ErrorValidation:
+	case *ErrorValidation:
 	default:
+		t.Errorf("error of the wrong type")
+	}
+
+	err = Validate(struct {
+		field string `validate:"empty=false" code:"100"`
+	}{
+		field: "",
+	})
+
+	switch err.(type) {
+	case *ErrorValidation:
+		e := err.(*ErrorValidation)
+		if e.GetCode() != "100" {
+			t.Errorf("wrong error code")
+		}
+	default:
+		t.Errorf("error of the wrong type")
+	}
+
+	err = Validate(struct {
+		field string `code:"100"`
+	}{
+		field: "",
+	})
+
+	switch err.(type) {
+	case *ErrorValidation:
 		t.Errorf("error of the wrong type")
 	}
 
@@ -284,7 +311,7 @@ func TestErrors(t *testing.T) {
 	})
 
 	switch err.(type) {
-	case ErrorSyntax:
+	case *ErrorSyntax:
 	default:
 		t.Errorf("error of the wrong type")
 	}
@@ -296,7 +323,7 @@ func TestErrors(t *testing.T) {
 	})
 
 	switch err.(type) {
-	case ErrorSyntax:
+	case *ErrorSyntax:
 	default:
 		t.Errorf("error of the wrong type")
 	}
@@ -308,7 +335,7 @@ func TestErrors(t *testing.T) {
 	})
 
 	switch err.(type) {
-	case ErrorSyntax:
+	case *ErrorSyntax:
 	default:
 		t.Errorf("error of the wrong type")
 	}
@@ -320,7 +347,7 @@ func TestErrors(t *testing.T) {
 	})
 
 	switch err.(type) {
-	case ErrorSyntax:
+	case *ErrorSyntax:
 	default:
 		t.Errorf("error of the wrong type")
 	}
@@ -332,7 +359,7 @@ func TestErrors(t *testing.T) {
 	})
 
 	switch err.(type) {
-	case ErrorSyntax:
+	case *ErrorSyntax:
 	default:
 		t.Errorf("error of the wrong type")
 	}
@@ -344,7 +371,7 @@ func TestErrors(t *testing.T) {
 	})
 
 	switch err.(type) {
-	case ErrorSyntax:
+	case *ErrorSyntax:
 	default:
 		t.Errorf("error of the wrong type")
 	}
@@ -356,7 +383,7 @@ func TestErrors(t *testing.T) {
 	})
 
 	switch err.(type) {
-	case ErrorSyntax:
+	case *ErrorSyntax:
 	default:
 		t.Errorf("error of the wrong type")
 	}
@@ -368,7 +395,7 @@ func TestErrors(t *testing.T) {
 	})
 
 	switch err.(type) {
-	case ErrorSyntax:
+	case *ErrorSyntax:
 	default:
 		t.Errorf("error of the wrong type")
 	}
@@ -380,7 +407,7 @@ func TestErrors(t *testing.T) {
 	})
 
 	switch err.(type) {
-	case ErrorSyntax:
+	case *ErrorSyntax:
 	default:
 		t.Errorf("error of the wrong type")
 	}
@@ -392,7 +419,7 @@ func TestErrors(t *testing.T) {
 	})
 
 	switch err.(type) {
-	case ErrorSyntax:
+	case *ErrorSyntax:
 	default:
 		t.Errorf("error of the wrong type")
 	}
@@ -404,7 +431,7 @@ func TestErrors(t *testing.T) {
 	})
 
 	switch err.(type) {
-	case ErrorSyntax:
+	case *ErrorSyntax:
 	default:
 		t.Errorf("error of the wrong type")
 	}
@@ -416,7 +443,7 @@ func TestErrors(t *testing.T) {
 	})
 
 	switch err.(type) {
-	case ErrorSyntax:
+	case *ErrorSyntax:
 	default:
 		t.Errorf("error of the wrong type")
 	}
@@ -428,7 +455,7 @@ func TestErrors(t *testing.T) {
 	})
 
 	switch err.(type) {
-	case ErrorSyntax:
+	case *ErrorSyntax:
 	default:
 		t.Errorf("error of the wrong type")
 	}
@@ -440,7 +467,7 @@ func TestErrors(t *testing.T) {
 	})
 
 	switch err.(type) {
-	case ErrorSyntax:
+	case *ErrorSyntax:
 	default:
 		t.Errorf("error of the wrong type")
 	}
@@ -452,7 +479,7 @@ func TestErrors(t *testing.T) {
 	})
 
 	switch err.(type) {
-	case ErrorSyntax:
+	case *ErrorSyntax:
 	default:
 		t.Errorf("error of the wrong type")
 	}
@@ -464,7 +491,7 @@ func TestErrors(t *testing.T) {
 	})
 
 	switch err.(type) {
-	case ErrorSyntax:
+	case *ErrorSyntax:
 	default:
 		t.Errorf("error of the wrong type")
 	}
@@ -476,7 +503,7 @@ func TestErrors(t *testing.T) {
 	})
 
 	switch err.(type) {
-	case ErrorSyntax:
+	case *ErrorSyntax:
 	default:
 		t.Errorf("error of the wrong type")
 	}
@@ -488,7 +515,7 @@ func TestErrors(t *testing.T) {
 	})
 
 	switch err.(type) {
-	case ErrorSyntax:
+	case *ErrorSyntax:
 	default:
 		t.Errorf("error of the wrong type")
 	}
@@ -500,7 +527,7 @@ func TestErrors(t *testing.T) {
 	})
 
 	switch err.(type) {
-	case ErrorSyntax:
+	case *ErrorSyntax:
 	default:
 		t.Errorf("error of the wrong type")
 	}

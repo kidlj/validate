@@ -9,6 +9,9 @@ import (
 // MasterTag is the main validation tag.
 const MasterTag = "validate"
 
+// CodeTag is the validation tag to indicate validation error.
+const CodeTag = "code"
+
 // CustomValidator is an interface for a validated struct.
 type CustomValidator interface {
 
@@ -45,7 +48,7 @@ func validateField(value reflect.Value, fieldName string, validators string) err
 	// Get validators
 	keyValidators, valueValidators, validators, err := splitValidators(validators)
 	if err != nil {
-		err = setFieldName(err, fieldName)
+		err.setFieldName(fieldName)
 		return err
 	}
 
@@ -57,7 +60,7 @@ func validateField(value reflect.Value, fieldName string, validators string) err
 	// Parse validators
 	validatorsOr, err := parseValidators(valueValidators)
 	if err != nil {
-		err = setFieldName(err, fieldName)
+		err.setFieldName(fieldName)
 		return err
 	}
 
@@ -66,11 +69,11 @@ func validateField(value reflect.Value, fieldName string, validators string) err
 		for _, validator := range validatorsAnd {
 			if validatorFunc, ok := validatorTypeMap[validator.Type]; ok {
 				if err = validatorFunc(value, validator.Value); err != nil {
-					err = setFieldName(err, fieldName)
+					err.setFieldName(fieldName)
 					break
 				}
 			} else {
-				return ErrorSyntax{
+				return &ErrorSyntax{
 					fieldName:  fieldName,
 					expression: string(validator.Type),
 					near:       valueValidators,
@@ -117,7 +120,7 @@ func validateField(value reflect.Value, fieldName string, validators string) err
 
 	if kind != reflect.Map {
 		if len(keyValidators) > 0 {
-			return ErrorSyntax{
+			return &ErrorSyntax{
 				fieldName:  fieldName,
 				expression: validators,
 				near:       "",
@@ -128,7 +131,7 @@ func validateField(value reflect.Value, fieldName string, validators string) err
 
 	if kind != reflect.Map && kind != reflect.Slice && kind != reflect.Array && kind != reflect.Ptr {
 		if len(validators) > 0 {
-			return ErrorSyntax{
+			return &ErrorSyntax{
 				fieldName:  fieldName,
 				expression: validators,
 				near:       "",
@@ -148,7 +151,11 @@ func validateStruct(value reflect.Value) error {
 	for i := 0; i < typ.NumField(); i++ {
 		validators := getValidators(typ.Field(i).Tag)
 		fieldName := typ.Field(i).Name
+		code := getCode(typ.Field(i).Tag)
 		if err := validateField(value.Field(i), fieldName, validators); err != nil {
+			if e, ok := err.(*ErrorValidation); ok {
+				e.setCode(code)
+			}
 			return err
 		}
 	}
@@ -159,6 +166,11 @@ func validateStruct(value reflect.Value) error {
 // getValidators gets validators
 func getValidators(tag reflect.StructTag) string {
 	return tag.Get(MasterTag)
+}
+
+// getCode gets code tag value
+func getCode(tag reflect.StructTag) string {
+	return tag.Get(CodeTag)
 }
 
 // splitValidators splits validators into key validators, value validators and remaning validators of the next level
@@ -191,14 +203,14 @@ loop:
 	}
 
 	if bracket > 0 {
-		err = ErrorSyntax{
+		err = &ErrorSyntax{
 			expression: "",
 			near:       validators,
 			comment:    "expected \"]\"",
 		}
 		return
 	} else if bracket < 0 {
-		err = ErrorSyntax{
+		err = &ErrorSyntax{
 			expression: "",
 			near:       validators,
 			comment:    "unexpected \"]\"",
@@ -223,7 +235,7 @@ loop:
 	}
 
 	if gt > 0 && len(remaningValidators) == 0 {
-		err = ErrorSyntax{
+		err = &ErrorSyntax{
 			expression: "",
 			near:       validators,
 			comment:    "expected expression",
@@ -252,7 +264,7 @@ func parseValidators(validators string) (validatorsOr [][]validator, err ErrorFi
 		for _, entryOr := range entriesAnd {
 			entries := strings.Split(entryOr, "=")
 			if len(entries) == 0 || len(entries) > 2 {
-				err = ErrorSyntax{
+				err = &ErrorSyntax{
 					expression: validators,
 					comment:    "could not parse",
 				}
@@ -260,7 +272,7 @@ func parseValidators(validators string) (validatorsOr [][]validator, err ErrorFi
 			}
 			t := regexpType.FindString(entries[0])
 			if len(t) == 0 {
-				err = ErrorSyntax{
+				err = &ErrorSyntax{
 					expression: entries[0],
 					near:       validators,
 					comment:    "could not parse",

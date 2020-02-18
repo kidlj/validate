@@ -79,13 +79,13 @@ func validateEq(value reflect.Value, validator string) ErrorField {
 	kind := value.Kind()
 	typ := value.Type()
 
-	errorValidation := ErrorValidation{
+	errorValidation := &ErrorValidation{
 		fieldValue:     value,
 		validatorType:  ValidatorEq,
 		validatorValue: validator,
 	}
 
-	errorSyntax := ErrorSyntax{
+	errorSyntax := &ErrorSyntax{
 		expression: validator,
 		near:       string(ValidatorEq),
 		comment:    "could not parse or run",
@@ -135,13 +135,13 @@ func validateNe(value reflect.Value, validator string) ErrorField {
 	kind := value.Kind()
 	typ := value.Type()
 
-	errorValidation := ErrorValidation{
+	errorValidation := &ErrorValidation{
 		fieldValue:     value,
 		validatorType:  ValidatorNe,
 		validatorValue: validator,
 	}
 
-	errorSyntax := ErrorSyntax{
+	errorSyntax := &ErrorSyntax{
 		expression: validator,
 		near:       string(ValidatorNe),
 		comment:    "could not parse or run",
@@ -191,13 +191,13 @@ func validateGt(value reflect.Value, validator string) ErrorField {
 	kind := value.Kind()
 	typ := value.Type()
 
-	errorValidation := ErrorValidation{
+	errorValidation := &ErrorValidation{
 		fieldValue:     value,
 		validatorType:  ValidatorGt,
 		validatorValue: validator,
 	}
 
-	errorSyntax := ErrorSyntax{
+	errorSyntax := &ErrorSyntax{
 		expression: validator,
 		near:       string(ValidatorGt),
 		comment:    "could not parse or run",
@@ -247,13 +247,13 @@ func validateLt(value reflect.Value, validator string) ErrorField {
 	kind := value.Kind()
 	typ := value.Type()
 
-	errorValidation := ErrorValidation{
+	errorValidation := &ErrorValidation{
 		fieldValue:     value,
 		validatorType:  ValidatorLt,
 		validatorValue: validator,
 	}
 
-	errorSyntax := ErrorSyntax{
+	errorSyntax := &ErrorSyntax{
 		expression: validator,
 		near:       string(ValidatorLt),
 		comment:    "could not parse or run",
@@ -303,13 +303,13 @@ func validateGte(value reflect.Value, validator string) ErrorField {
 	kind := value.Kind()
 	typ := value.Type()
 
-	errorValidation := ErrorValidation{
+	errorValidation := &ErrorValidation{
 		fieldValue:     value,
 		validatorType:  ValidatorGte,
 		validatorValue: validator,
 	}
 
-	errorSyntax := ErrorSyntax{
+	errorSyntax := &ErrorSyntax{
 		expression: validator,
 		near:       string(ValidatorGte),
 		comment:    "could not parse or run",
@@ -359,13 +359,13 @@ func validateLte(value reflect.Value, validator string) ErrorField {
 	kind := value.Kind()
 	typ := value.Type()
 
-	errorValidation := ErrorValidation{
+	errorValidation := &ErrorValidation{
 		fieldValue:     value,
 		validatorType:  ValidatorLte,
 		validatorValue: validator,
 	}
 
-	errorSyntax := ErrorSyntax{
+	errorSyntax := &ErrorSyntax{
 		expression: validator,
 		near:       string(ValidatorLte),
 		comment:    "could not parse or run",
@@ -414,13 +414,13 @@ func validateLte(value reflect.Value, validator string) ErrorField {
 func validateEmpty(value reflect.Value, validator string) ErrorField {
 	kind := value.Kind()
 
-	errorValidation := ErrorValidation{
+	errorValidation := &ErrorValidation{
 		fieldValue:     value,
 		validatorType:  ValidatorEmpty,
 		validatorValue: validator,
 	}
 
-	errorSyntax := ErrorSyntax{
+	errorSyntax := &ErrorSyntax{
 		expression: validator,
 		near:       string(ValidatorEmpty),
 		comment:    "could not parse or run",
@@ -445,13 +445,13 @@ func validateEmpty(value reflect.Value, validator string) ErrorField {
 func validateNil(value reflect.Value, validator string) ErrorField {
 	kind := value.Kind()
 
-	errorValidation := ErrorValidation{
+	errorValidation := &ErrorValidation{
 		fieldValue:     value,
 		validatorType:  ValidatorNil,
 		validatorValue: validator,
 	}
 
-	errorSyntax := ErrorSyntax{
+	errorSyntax := &ErrorSyntax{
 		expression: validator,
 		near:       string(ValidatorNil),
 		comment:    "could not parse or run",
@@ -477,13 +477,13 @@ func validateOneOf(value reflect.Value, validator string) ErrorField {
 	kind := value.Kind()
 	typ := value.Type()
 
-	errorValidation := ErrorValidation{
+	errorValidation := &ErrorValidation{
 		fieldValue:     value,
 		validatorType:  ValidatorOneOf,
 		validatorValue: validator,
 	}
 
-	errorSyntax := ErrorSyntax{
+	errorSyntax := &ErrorSyntax{
 		expression: validator,
 		near:       string(ValidatorOneOf),
 		comment:    "could not parse or run",
@@ -574,13 +574,13 @@ func validateOneOf(value reflect.Value, validator string) ErrorField {
 func validateFormat(value reflect.Value, validator string) ErrorField {
 	kind := value.Kind()
 
-	errorValidation := ErrorValidation{
+	errorValidation := &ErrorValidation{
 		fieldValue:     value,
 		validatorType:  ValidatorFormat,
 		validatorValue: validator,
 	}
 
-	errorSyntax := ErrorSyntax{
+	errorSyntax := &ErrorSyntax{
 		expression: validator,
 		near:       string(ValidatorFormat),
 		comment:    "could not find format",
