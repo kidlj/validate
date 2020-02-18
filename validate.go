@@ -35,11 +35,11 @@ type CustomValidator interface {
 func Validate(element interface{}) error {
 	value := reflect.ValueOf(element)
 
-	return validateField(value, "", "")
+	return validateField(value, "", "", "")
 }
 
 // validateField validates a struct field
-func validateField(value reflect.Value, fieldName string, validators string) error {
+func validateField(value reflect.Value, fieldName, validators, code string) error {
 	kind := value.Kind()
 
 	// Get validator type Map
@@ -70,6 +70,9 @@ func validateField(value reflect.Value, fieldName string, validators string) err
 			if validatorFunc, ok := validatorTypeMap[validator.Type]; ok {
 				if err = validatorFunc(value, validator.Value); err != nil {
 					err.setFieldName(fieldName)
+					if e, ok := err.(*ErrorValidation); ok {
+						e.setCode(code)
+					}
 					break
 				}
 			} else {
@@ -97,22 +100,22 @@ func validateField(value reflect.Value, fieldName string, validators string) err
 		}
 	case reflect.Map:
 		for _, key := range value.MapKeys() {
-			if err := validateField(key, fieldName, keyValidators); err != nil {
+			if err := validateField(key, fieldName, keyValidators, code); err != nil {
 				return err
 			}
-			if err := validateField(value.MapIndex(key), fieldName, validators); err != nil {
+			if err := validateField(value.MapIndex(key), fieldName, validators, code); err != nil {
 				return err
 			}
 		}
 	case reflect.Slice, reflect.Array:
 		for i := 0; i < value.Len(); i++ {
-			if err := validateField(value.Index(i), fieldName, validators); err != nil {
+			if err := validateField(value.Index(i), fieldName, validators, code); err != nil {
 				return err
 			}
 		}
 	case reflect.Ptr:
 		if !value.IsNil() {
-			if err := validateField(value.Elem(), fieldName, validators); err != nil {
+			if err := validateField(value.Elem(), fieldName, validators, code); err != nil {
 				return err
 			}
 		}
@@ -152,10 +155,7 @@ func validateStruct(value reflect.Value) error {
 		validators := getValidators(typ.Field(i).Tag)
 		fieldName := typ.Field(i).Name
 		code := getCode(typ.Field(i).Tag)
-		if err := validateField(value.Field(i), fieldName, validators); err != nil {
-			if e, ok := err.(*ErrorValidation); ok {
-				e.setCode(code)
-			}
+		if err := validateField(value.Field(i), fieldName, validators, code); err != nil {
 			return err
 		}
 	}

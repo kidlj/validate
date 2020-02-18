@@ -278,22 +278,6 @@ func TestErrors(t *testing.T) {
 	}
 
 	err = Validate(struct {
-		field string `validate:"empty=false" code:"100"`
-	}{
-		field: "",
-	})
-
-	switch err.(type) {
-	case *ErrorValidation:
-		e := err.(*ErrorValidation)
-		if e.GetCode() != "100" {
-			t.Errorf("wrong error code")
-		}
-	default:
-		t.Errorf("error of the wrong type")
-	}
-
-	err = Validate(struct {
 		field string `code:"100"`
 	}{
 		field: "",
@@ -5205,4 +5189,31 @@ func TestDeepDeepStructVal(t *testing.T) {
 	}) {
 		t.Errorf("complex validator does not validate")
 	}
+}
+
+func TestCode(t *testing.T) {
+	type B struct {
+		field string `validate:"empty=false" code:"100"`
+	}
+
+	type A struct {
+		B B
+	}
+
+	err := Validate(A{
+		B: B{
+			field: "",
+		},
+	})
+
+	switch err.(type) {
+	case *ErrorValidation:
+		e := err.(*ErrorValidation)
+		if e.GetCode() != "100" {
+			t.Errorf("wrong error code")
+		}
+	default:
+		t.Errorf("error of the wrong type")
+	}
+
 }
