@@ -5200,6 +5200,10 @@ func TestCode(t *testing.T) {
 		B B
 	}
 
+	type C struct {
+		Array []B `validate:"empty=false" code:"200"`
+	}
+
 	err := Validate(A{
 		B: B{
 			field: "",
@@ -5216,4 +5220,35 @@ func TestCode(t *testing.T) {
 		t.Errorf("error of the wrong type")
 	}
 
+	err = Validate(C{
+		Array: []B{},
+	})
+
+	switch err.(type) {
+	case *ErrorValidation:
+		e := err.(*ErrorValidation)
+		if e.GetCode() != "200" {
+			t.Errorf("wrong error code")
+		}
+	default:
+		t.Errorf("error of the wrong type")
+	}
+
+	err = Validate(C{
+		Array: []B{
+			{
+				field: "",
+			},
+		},
+	})
+
+	switch err.(type) {
+	case *ErrorValidation:
+		e := err.(*ErrorValidation)
+		if e.GetCode() != "100" {
+			t.Errorf("wrong error code")
+		}
+	default:
+		t.Errorf("error of the wrong type")
+	}
 }
