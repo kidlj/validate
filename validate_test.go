@@ -561,10 +561,15 @@ func TestCustomValidator(t *testing.T) {
 		t.Errorf("custom validator does not validate")
 	}
 
-	if nil == Validate(StCustomValidator{
+	err := Validate(StCustomValidator{
 		field: 0,
-	}) {
+	})
+	if err == nil {
 		t.Errorf("custom validator does not validate")
+	}
+	_, ok := err.(ErrorField)
+	if !ok {
+		t.Errorf("custom validator should implements ErrorField")
 	}
 
 	if nil != Validate(&StCustomValidator{
@@ -5213,7 +5218,7 @@ func TestCode(t *testing.T) {
 	switch err.(type) {
 	case *ErrorValidation:
 		e := err.(*ErrorValidation)
-		if e.GetCode() != "100" {
+		if e.Code() != "100" {
 			t.Errorf("wrong error code")
 		}
 	default:
@@ -5227,7 +5232,7 @@ func TestCode(t *testing.T) {
 	switch err.(type) {
 	case *ErrorValidation:
 		e := err.(*ErrorValidation)
-		if e.GetCode() != "200" {
+		if e.Code() != "200" {
 			t.Errorf("wrong error code")
 		}
 	default:
@@ -5245,7 +5250,7 @@ func TestCode(t *testing.T) {
 	switch err.(type) {
 	case *ErrorValidation:
 		e := err.(*ErrorValidation)
-		if e.GetCode() != "100" {
+		if e.Code() != "100" {
 			t.Errorf("wrong error code")
 		}
 	default:

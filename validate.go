@@ -49,18 +49,20 @@ func validateField(value reflect.Value, fieldName, validators, code string) erro
 	keyValidators, valueValidators, validators, err := splitValidators(validators)
 	if err != nil {
 		err.setFieldName(fieldName)
+		err.setCode(code)
 		return err
 	}
 
 	// Call a custom validator
 	if err := callCustomValidator(value); err != nil {
-		return err
+		return NewErrorCustom(fieldName, value, code, err.Error())
 	}
 
 	// Parse validators
 	validatorsOr, err := parseValidators(valueValidators)
 	if err != nil {
 		err.setFieldName(fieldName)
+		err.setCode(code)
 		return err
 	}
 
@@ -70,9 +72,7 @@ func validateField(value reflect.Value, fieldName, validators, code string) erro
 			if validatorFunc, ok := validatorTypeMap[validator.Type]; ok {
 				if err = validatorFunc(value, validator.Value); err != nil {
 					err.setFieldName(fieldName)
-					if e, ok := err.(*ErrorValidation); ok {
-						e.setCode(code)
-					}
+					err.setCode(code)
 					break
 				}
 			} else {

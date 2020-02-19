@@ -50,6 +50,8 @@ const (
 	// ValidatorFormat checks if a string of a given format.
 	// E.g. `validate:"format=email"`
 	ValidatorFormat ValidatorType = "format"
+
+	ValidatorCustom ValidatorType = "custom"
 )
 
 // validatorFunc is an interface for validator func
