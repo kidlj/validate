@@ -13,11 +13,13 @@ type ErrorField interface {
 }
 
 // NewErrorValidation creates an ErrorValidation
-func NewErrorValidation(fieldName string, fieldValue reflect.Value, code string) *ErrorValidation {
+func NewErrorValidation(fieldName string, fieldValue reflect.Value, code string, validatorType ValidatorType, validatorValue string) *ErrorValidation {
 	return &ErrorValidation{
-		fieldName:  fieldName,
-		fieldValue: fieldValue,
-		code:       code,
+		fieldName:      fieldName,
+		fieldValue:     fieldValue,
+		code:           code,
+		validatorType:  validatorType,
+		validatorValue: validatorValue,
 	}
 }
 
