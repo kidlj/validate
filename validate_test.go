@@ -5340,3 +5340,85 @@ func TestFieldCustomValidatorInt(t *testing.T) {
 		t.Errorf("error of the wrong type")
 	}
 }
+
+func TestSetMasterTag(t *testing.T) {
+	MyValidatorInt := func(v interface{}) error {
+		value := v.(int)
+		if value != 42 {
+			return fmt.Errorf("custom my-validator-int validation error: must be 42")
+		}
+		return nil
+	}
+
+	v := New()
+	v.SetMasterTag("binding")
+	v.RegisterFieldValidator("my-validator-int", MyValidatorInt)
+
+	type B struct {
+		Int int `binding:"custom=my-validator-int" code:"100"`
+	}
+
+	type A struct {
+		B B
+	}
+
+	err := v.Validate(A{
+		B: B{
+			Int: 64,
+		},
+	})
+
+	switch err.(type) {
+	case ErrorField:
+		e := err.(ErrorField)
+		if e.FieldName() != "Int" {
+			t.Error("wrong FieldName")
+		}
+		if e.Code() != "100" {
+			t.Errorf("wrong error code")
+		}
+	default:
+		t.Errorf("error of the wrong type")
+	}
+}
+
+func TestSetCodeTag(t *testing.T) {
+	MyValidatorInt := func(v interface{}) error {
+		value := v.(int)
+		if value != 42 {
+			return fmt.Errorf("custom my-validator-int validation error: must be 42")
+		}
+		return nil
+	}
+
+	v := New()
+	v.SetCodeTag("error")
+	v.RegisterFieldValidator("my-validator-int", MyValidatorInt)
+
+	type B struct {
+		Int int `validate:"custom=my-validator-int" error:"100"`
+	}
+
+	type A struct {
+		B B
+	}
+
+	err := v.Validate(A{
+		B: B{
+			Int: 64,
+		},
+	})
+
+	switch err.(type) {
+	case ErrorField:
+		e := err.(ErrorField)
+		if e.FieldName() != "Int" {
+			t.Error("wrong FieldName")
+		}
+		if e.Code() != "100" {
+			t.Errorf("wrong error code")
+		}
+	default:
+		t.Errorf("error of the wrong type")
+	}
+}

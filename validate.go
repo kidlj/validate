@@ -6,12 +6,14 @@ import (
 	"strings"
 )
 
+// Validator is the exported validator
 type Validator struct {
 	masterTag             string
 	codeTag               string
 	fieldCustomValidators map[string]FieldCustomValidatorFunc
 }
 
+// New creates a Validator
 func New() *Validator {
 	return &Validator{
 		masterTag:             MasterTag,
@@ -20,6 +22,7 @@ func New() *Validator {
 	}
 }
 
+// FieldCustomValidatorFunc represents field custom validator func type
 type FieldCustomValidatorFunc func(interface{}) error
 
 // getValidators gets validators
@@ -32,14 +35,17 @@ func (v *Validator) getCode(tag reflect.StructTag) string {
 	return tag.Get(v.codeTag)
 }
 
+// SetMasterTag sets the `validate`(default) master tag
 func (v *Validator) SetMasterTag(tag string) {
 	v.masterTag = tag
 }
 
+// SetCodeTag sets the `code`(default) tag
 func (v *Validator) SetCodeTag(tag string) {
 	v.codeTag = tag
 }
 
+// RegisterFieldValidator registers a custom validator func
 func (v *Validator) RegisterFieldValidator(name string, validator FieldCustomValidatorFunc) {
 	if len(name) > 0 && validator != nil {
 		v.fieldCustomValidators[name] = validator
