@@ -605,7 +605,9 @@ func (v *Validator) validateFormat(value reflect.Value, validator string) ErrorF
 }
 
 func (v *Validator) validateCustom(value reflect.Value, validator string) ErrorField {
-	kind := value.Kind()
+	if !value.CanInterface() {
+		return nil
+	}
 
 	errorCustom := &ErrorCustom{
 		fieldValue: value,
@@ -617,19 +619,13 @@ func (v *Validator) validateCustom(value reflect.Value, validator string) ErrorF
 		comment:    "could not parse or run",
 	}
 
-	switch kind {
-	case reflect.String:
-		customFunc, ok := v.fieldCustomValidators[validator]
-		if !ok {
-			return errorSyntax
-		}
-		if err := customFunc(value.String()); err != nil {
-			errorCustom.message = err.Error()
-			return errorCustom
-		}
-
-	default:
+	customFunc, ok := v.fieldCustomValidators[validator]
+	if !ok {
 		return errorSyntax
+	}
+	if err := customFunc(value.Interface()); err != nil {
+		errorCustom.message = err.Error()
+		return errorCustom
 	}
 
 	return nil

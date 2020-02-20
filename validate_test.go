@@ -5261,19 +5261,20 @@ func TestCode(t *testing.T) {
 	}
 }
 
-func TestFieldCustomValidator(t *testing.T) {
-	MyValidator := func(v string) error {
-		if v != "exact" {
-			return fmt.Errorf("custom my-validator validation error: must be exact")
+func TestFieldCustomValidatorStr(t *testing.T) {
+	MyValidatorStr := func(v interface{}) error {
+		value := v.(string)
+		if value != "exact" {
+			return fmt.Errorf("custom my-validator-str validation error: must be exact")
 		}
 		return nil
 	}
 
 	v := New()
-	v.RegisterFieldValidator("my-validator", MyValidator)
+	v.RegisterFieldValidator("my-validator-str", MyValidatorStr)
 
 	type B struct {
-		field string `validate:"empty=false & custom=my-validator" code:"100"`
+		Str string `validate:"custom=my-validator-str" code:"100"`
 	}
 
 	type A struct {
@@ -5282,19 +5283,60 @@ func TestFieldCustomValidator(t *testing.T) {
 
 	err := v.Validate(A{
 		B: B{
-			field: "hello",
+			Str: "hello",
 		},
 	})
 
 	switch err.(type) {
 	case ErrorField:
 		e := err.(ErrorField)
-		fmt.Println(e.Error())
+		if e.FieldName() != "Str" {
+			t.Error("wrong FieldName")
+		}
 		if e.Code() != "100" {
 			t.Errorf("wrong error code")
 		}
 	default:
 		t.Errorf("error of the wrong type")
 	}
+}
 
+func TestFieldCustomValidatorInt(t *testing.T) {
+	MyValidatorInt := func(v interface{}) error {
+		value := v.(int)
+		if value != 42 {
+			return fmt.Errorf("custom my-validator-int validation error: must be 42")
+		}
+		return nil
+	}
+
+	v := New()
+	v.RegisterFieldValidator("my-validator-int", MyValidatorInt)
+
+	type B struct {
+		Int int `validate:"custom=my-validator-int" code:"100"`
+	}
+
+	type A struct {
+		B B
+	}
+
+	err := v.Validate(A{
+		B: B{
+			Int: 64,
+		},
+	})
+
+	switch err.(type) {
+	case ErrorField:
+		e := err.(ErrorField)
+		if e.FieldName() != "Int" {
+			t.Error("wrong FieldName")
+		}
+		if e.Code() != "100" {
+			t.Errorf("wrong error code")
+		}
+	default:
+		t.Errorf("error of the wrong type")
+	}
 }

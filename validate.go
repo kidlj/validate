@@ -20,7 +20,7 @@ func New() *Validator {
 	}
 }
 
-type FieldCustomValidatorFunc func(string) error
+type FieldCustomValidatorFunc func(interface{}) error
 
 // getValidators gets validators
 func (v *Validator) getValidators(tag reflect.StructTag) string {
