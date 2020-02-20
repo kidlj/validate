@@ -6,6 +6,46 @@ import (
 	"strings"
 )
 
+type Validator struct {
+	masterTag             string
+	codeTag               string
+	fieldCustomValidators map[string]FieldCustomValidatorFunc
+}
+
+func New() *Validator {
+	return &Validator{
+		masterTag:             MasterTag,
+		codeTag:               CodeTag,
+		fieldCustomValidators: map[string]FieldCustomValidatorFunc{},
+	}
+}
+
+type FieldCustomValidatorFunc func(string) error
+
+// getValidators gets validators
+func (v *Validator) getValidators(tag reflect.StructTag) string {
+	return tag.Get(v.masterTag)
+}
+
+// getCode gets code tag value
+func (v *Validator) getCode(tag reflect.StructTag) string {
+	return tag.Get(v.codeTag)
+}
+
+func (v *Validator) SetMasterTag(tag string) {
+	v.masterTag = tag
+}
+
+func (v *Validator) SetCodeTag(tag string) {
+	v.codeTag = tag
+}
+
+func (v *Validator) RegisterFieldValidator(name string, validator FieldCustomValidatorFunc) {
+	if len(name) > 0 && validator != nil {
+		v.fieldCustomValidators[name] = validator
+	}
+}
+
 // MasterTag is the main validation tag.
 const MasterTag = "validate"
 
@@ -21,6 +61,15 @@ type CustomValidator interface {
 	Validate() error
 }
 
+// FieldCustomValidator is an interface for a validated struct.
+type FieldCustomValidator interface {
+
+	// Validate is a custom validation function.
+	// Validate does not work when the receiver is a reference.
+	// Validate does not work for nested types obtained from unexported field.
+	Validate(value string) error
+}
+
 // Validate validates fields of a struct.
 // It accepts a struct or a struct pointer as a parameter.
 // It returns an error if a struct does not validate or nil if there are no validation errors.
@@ -32,18 +81,18 @@ type CustomValidator interface {
 //  })
 //
 //  // err contains an error
-func Validate(element interface{}) error {
+func (v *Validator) Validate(element interface{}) error {
 	value := reflect.ValueOf(element)
 
-	return validateField(value, "", "", "")
+	return v.validateField(value, "", "", "")
 }
 
 // validateField validates a struct field
-func validateField(value reflect.Value, fieldName, validators, code string) error {
+func (v *Validator) validateField(value reflect.Value, fieldName, validators, code string) error {
 	kind := value.Kind()
 
 	// Get validator type Map
-	validatorTypeMap := getValidatorTypeMap()
+	validatorTypeMap := v.getValidatorTypeMap()
 
 	// Get validators
 	keyValidators, valueValidators, validators, err := splitValidators(validators)
@@ -95,27 +144,27 @@ func validateField(value reflect.Value, fieldName, validators, code string) erro
 	// Dive one level deep into arrays and pointers
 	switch kind {
 	case reflect.Struct:
-		if err := validateStruct(value); err != nil {
+		if err := v.validateStruct(value); err != nil {
 			return err
 		}
 	case reflect.Map:
 		for _, key := range value.MapKeys() {
-			if err := validateField(key, fieldName, keyValidators, code); err != nil {
+			if err := v.validateField(key, fieldName, keyValidators, code); err != nil {
 				return err
 			}
-			if err := validateField(value.MapIndex(key), fieldName, validators, code); err != nil {
+			if err := v.validateField(value.MapIndex(key), fieldName, validators, code); err != nil {
 				return err
 			}
 		}
 	case reflect.Slice, reflect.Array:
 		for i := 0; i < value.Len(); i++ {
-			if err := validateField(value.Index(i), fieldName, validators, code); err != nil {
+			if err := v.validateField(value.Index(i), fieldName, validators, code); err != nil {
 				return err
 			}
 		}
 	case reflect.Ptr:
 		if !value.IsNil() {
-			if err := validateField(value.Elem(), fieldName, validators, code); err != nil {
+			if err := v.validateField(value.Elem(), fieldName, validators, code); err != nil {
 				return err
 			}
 		}
@@ -147,30 +196,20 @@ func validateField(value reflect.Value, fieldName, validators, code string) erro
 }
 
 // validateStruct validates a struct
-func validateStruct(value reflect.Value) error {
+func (v *Validator) validateStruct(value reflect.Value) error {
 	typ := value.Type()
 
 	// Iterate over struct fields
 	for i := 0; i < typ.NumField(); i++ {
-		validators := getValidators(typ.Field(i).Tag)
+		validators := v.getValidators(typ.Field(i).Tag)
 		fieldName := typ.Field(i).Name
-		code := getCode(typ.Field(i).Tag)
-		if err := validateField(value.Field(i), fieldName, validators, code); err != nil {
+		code := v.getCode(typ.Field(i).Tag)
+		if err := v.validateField(value.Field(i), fieldName, validators, code); err != nil {
 			return err
 		}
 	}
 
 	return nil
-}
-
-// getValidators gets validators
-func getValidators(tag reflect.StructTag) string {
-	return tag.Get(MasterTag)
-}
-
-// getCode gets code tag value
-func getCode(tag reflect.StructTag) string {
-	return tag.Get(CodeTag)
 }
 
 // splitValidators splits validators into key validators, value validators and remaning validators of the next level

@@ -57,18 +57,19 @@ const (
 // validatorFunc is an interface for validator func
 type validatorFunc func(value reflect.Value, validator string) ErrorField
 
-func getValidatorTypeMap() map[ValidatorType]validatorFunc {
+func (v *Validator) getValidatorTypeMap() map[ValidatorType]validatorFunc {
 	return map[ValidatorType]validatorFunc{
-		ValidatorEq:     validateEq,
-		ValidatorNe:     validateNe,
-		ValidatorGt:     validateGt,
-		ValidatorLt:     validateLt,
-		ValidatorGte:    validateGte,
-		ValidatorLte:    validateLte,
-		ValidatorEmpty:  validateEmpty,
-		ValidatorNil:    validateNil,
-		ValidatorOneOf:  validateOneOf,
-		ValidatorFormat: validateFormat,
+		ValidatorEq:     v.validateEq,
+		ValidatorNe:     v.validateNe,
+		ValidatorGt:     v.validateGt,
+		ValidatorLt:     v.validateLt,
+		ValidatorGte:    v.validateGte,
+		ValidatorLte:    v.validateLte,
+		ValidatorEmpty:  v.validateEmpty,
+		ValidatorNil:    v.validateNil,
+		ValidatorOneOf:  v.validateOneOf,
+		ValidatorFormat: v.validateFormat,
+		ValidatorCustom: v.validateCustom,
 	}
 }
 
@@ -77,7 +78,7 @@ type validator struct {
 	Value string
 }
 
-func validateEq(value reflect.Value, validator string) ErrorField {
+func (v *Validator) validateEq(value reflect.Value, validator string) ErrorField {
 	kind := value.Kind()
 	typ := value.Type()
 
@@ -133,7 +134,7 @@ func validateEq(value reflect.Value, validator string) ErrorField {
 	return nil
 }
 
-func validateNe(value reflect.Value, validator string) ErrorField {
+func (v *Validator) validateNe(value reflect.Value, validator string) ErrorField {
 	kind := value.Kind()
 	typ := value.Type()
 
@@ -189,7 +190,7 @@ func validateNe(value reflect.Value, validator string) ErrorField {
 	return nil
 }
 
-func validateGt(value reflect.Value, validator string) ErrorField {
+func (v *Validator) validateGt(value reflect.Value, validator string) ErrorField {
 	kind := value.Kind()
 	typ := value.Type()
 
@@ -245,7 +246,7 @@ func validateGt(value reflect.Value, validator string) ErrorField {
 	return nil
 }
 
-func validateLt(value reflect.Value, validator string) ErrorField {
+func (v *Validator) validateLt(value reflect.Value, validator string) ErrorField {
 	kind := value.Kind()
 	typ := value.Type()
 
@@ -301,7 +302,7 @@ func validateLt(value reflect.Value, validator string) ErrorField {
 	return nil
 }
 
-func validateGte(value reflect.Value, validator string) ErrorField {
+func (v *Validator) validateGte(value reflect.Value, validator string) ErrorField {
 	kind := value.Kind()
 	typ := value.Type()
 
@@ -357,7 +358,7 @@ func validateGte(value reflect.Value, validator string) ErrorField {
 	return nil
 }
 
-func validateLte(value reflect.Value, validator string) ErrorField {
+func (v *Validator) validateLte(value reflect.Value, validator string) ErrorField {
 	kind := value.Kind()
 	typ := value.Type()
 
@@ -413,7 +414,7 @@ func validateLte(value reflect.Value, validator string) ErrorField {
 	return nil
 }
 
-func validateEmpty(value reflect.Value, validator string) ErrorField {
+func (v *Validator) validateEmpty(value reflect.Value, validator string) ErrorField {
 	kind := value.Kind()
 
 	errorValidation := &ErrorValidation{
@@ -444,7 +445,7 @@ func validateEmpty(value reflect.Value, validator string) ErrorField {
 	return nil
 }
 
-func validateNil(value reflect.Value, validator string) ErrorField {
+func (v *Validator) validateNil(value reflect.Value, validator string) ErrorField {
 	kind := value.Kind()
 
 	errorValidation := &ErrorValidation{
@@ -475,7 +476,7 @@ func validateNil(value reflect.Value, validator string) ErrorField {
 	return nil
 }
 
-func validateOneOf(value reflect.Value, validator string) ErrorField {
+func (v *Validator) validateOneOf(value reflect.Value, validator string) ErrorField {
 	kind := value.Kind()
 	typ := value.Type()
 
@@ -573,7 +574,7 @@ func validateOneOf(value reflect.Value, validator string) ErrorField {
 	return nil
 }
 
-func validateFormat(value reflect.Value, validator string) ErrorField {
+func (v *Validator) validateFormat(value reflect.Value, validator string) ErrorField {
 	kind := value.Kind()
 
 	errorValidation := &ErrorValidation{
@@ -596,6 +597,37 @@ func validateFormat(value reflect.Value, validator string) ErrorField {
 		} else if !formatFunc(value.String()) {
 			return errorValidation
 		}
+	default:
+		return errorSyntax
+	}
+
+	return nil
+}
+
+func (v *Validator) validateCustom(value reflect.Value, validator string) ErrorField {
+	kind := value.Kind()
+
+	errorCustom := &ErrorCustom{
+		fieldValue: value,
+	}
+
+	errorSyntax := &ErrorSyntax{
+		expression: validator,
+		near:       string(ValidatorCustom),
+		comment:    "could not parse or run",
+	}
+
+	switch kind {
+	case reflect.String:
+		customFunc, ok := v.fieldCustomValidators[validator]
+		if !ok {
+			return errorSyntax
+		}
+		if err := customFunc(value.String()); err != nil {
+			errorCustom.message = err.Error()
+			return errorCustom
+		}
+
 	default:
 		return errorSyntax
 	}
