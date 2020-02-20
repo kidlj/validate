@@ -3,6 +3,9 @@
 Forked from https://github.com/dealancer/validate
 
 - Add `code` struct tag to indicate validation error.
+- Make all builtin and custom validators return `ErrorField` in case of error.
+- Add `RegisterFieldValidator()` to custom validating a specific field.
+- Add `New()` to return a `*Validator` and support setting its `masterTag` and `codeTag`.
 
 # validate
 
